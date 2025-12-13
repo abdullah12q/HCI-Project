@@ -1,0 +1,146 @@
+<div class="p-6 max-w-7xl mx-auto">
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Savings Goals</h1>
+      <p class="text-gray-500">Track your progress towards your dreams</p>
+    </div>
+    <p-button
+      label="New Goal"
+      icon="pi pi-plus"
+      (onClick)="showDialog()"
+      styleClass="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-md"
+    />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (goal of goals(); track $index) {
+    <div class="relative">
+      <p-card class="h-full p-4 shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-gray-800">{{ goal.name }}</h3>
+          <span class="text-xs text-gray-500 uppercase tracking-wider"
+            >Target: {{ goal.targetAmount | currency }}</span
+          >
+        </div>
+
+        <div class="mb-4">
+          <div class="flex justify-between text-sm mb-1">
+            <span class="font-semibold text-gray-700"
+              >{{ goal.currentAmount | currency }} saved</span
+            >
+            <span class="text-gray-500">{{ getPercentage(goal) }}%</span>
+          </div>
+          <p-progressBar
+            [value]="getPercentage(goal)"
+            [showValue]="false"
+            [style]="{ height: '10px' }"
+            [color]="getColor(goal)"
+          >
+          </p-progressBar>
+        </div>
+
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+          <p-button
+            icon="pi pi-trash"
+            styleClass="bg-transparent! border-none! text-red-500! hover:bg-red-50! rounded-full! w-10! h-10! transition-colors"
+            (onClick)="deleteGoal(goal.id)"
+          />
+          <div class="flex items-center gap-2">
+            <p-inputNumber
+              #amtInput
+              mode="currency"
+              currency="USD"
+              locale="en-US"
+              placeholder="$0"
+              class="w-24 pl-2 py-1 border border-gray-200 rounded-2xl"
+            />
+
+            <p-button
+              icon="pi pi-plus"
+              (onClick)="addFunds(goal.id, amtInput.value ?? null)"
+              styleClass="bg-blue-600! border-blue-600! hover:bg-blue-700! text-white! rounded-lg! w-8! h-8!"
+            />
+          </div>
+        </div>
+      </p-card>
+    </div>
+    }
+  </div>
+
+  @if (goals().length === 0) {
+  <div class="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200 border-dashed">
+    <i class="pi pi-flag text-4xl text-gray-300 mb-4"></i>
+    <h3 class="text-lg font-medium text-gray-900">No goals yet</h3>
+    <p class="text-gray-500">Create a goal to start saving!</p>
+  </div>
+  }
+
+  <p-dialog
+    [(visible)]="displayDialog"
+    header="Create Savings Goal"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [draggable]="false"
+    [resizable]="false"
+    [focusOnShow]="false"
+    styleClass="p-5 rounded-xl!"
+  >
+    <form [formGroup]="goalForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 mt-2">
+      <div class="flex flex-col gap-2">
+        <label for="goalName" class="font-semibold text-gray-700">Goal Name</label>
+        <input
+          pInputText
+          id="goalName"
+          formControlName="name"
+          placeholder="Enter a goal name"
+          class="pl-2 h-7 rounded-lg! bg-gray-200!"
+        />
+        @if (goalForm.get("name")?.invalid && goalForm.get('name')?.touched) {
+        <small class="text-red-500 text-xs">Goal name is required (min 3 chars).</small>
+        }
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="targetAmount" class="font-semibold text-gray-700">Target Amount ($)</label>
+        <p-inputNumber
+          formControlName="targetAmount"
+          mode="currency"
+          currency="USD"
+          locale="en-US"
+          inputId="targetAmount"
+          placeholder="Enter a target amount"
+          class="pl-2 h-7 rounded-lg! bg-gray-200!"
+        />
+        @if (goalForm.get("targetAmount")?.invalid && goalForm.get('targetAmount')?.touched) {
+        <small class="text-red-500 text-xs">Target amount is required.</small>
+        }
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="currentAmount" class="font-semibold text-gray-700">Starting Balance ($)</label>
+        <p-inputNumber
+          formControlName="currentAmount"
+          mode="currency"
+          currency="USD"
+          locale="en-US"
+          inputId="currentAmount"
+          placeholder="Enter a starting balance"
+          class="pl-2 h-7 rounded-lg! bg-gray-200!"
+        />
+        @if (goalForm.get("currentAmount")?.invalid && goalForm.get('currentAmount')?.touched) {
+        <small class="text-red-500 text-xs">Starting balance is required.</small>
+        }
+      </div>
+
+      <div class="flex items-center justify-end gap-5 mt-4">
+        <p-button label="Cancel" (onClick)="displayDialog = false" />
+        <p-button
+          label="Create Goal"
+          type="submit"
+          [disabled]="goalForm.invalid"
+          styleClass="bg-blue-600! border-blue-600! hover:bg-blue-700! text-white! rounded-lg! px-4! py-2! cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </div>
+    </form>
+  </p-dialog>
+</div>
